@@ -136,7 +136,6 @@ async fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
 
     let term = Term::stdout();
-   
 
     match cli.command {
         Commands::Transcode(cmd) => command::transcode::transcode(cmd, &term).await?,
