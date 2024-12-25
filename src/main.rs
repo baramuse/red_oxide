@@ -136,13 +136,7 @@ async fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
 
     let term = Term::stdout();
-    let mut github = GithubApi::new()?;
-
-    if discriminant(&cli.command)
-        != discriminant(&Commands::SelfUpdate(SelfUpdateCommand { debug: false }))
-    {
-        check_for_new_version_and_notify(&mut github, &term).await?;
-    }
+   
 
     match cli.command {
         Commands::Transcode(cmd) => command::transcode::transcode(cmd, &term).await?,
