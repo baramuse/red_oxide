@@ -121,7 +121,6 @@ async fn main() -> anyhow::Result<()> {
         .filter_level(log::LevelFilter::Info)
         .init();
 
-    cleanup_old_executable().await?;
 
     let cli = Cli::parse();
 
