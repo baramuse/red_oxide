@@ -39,17 +39,7 @@ struct Cli {
 #[derive(Subcommand, Debug)]
 enum Commands {
     /// Transcode FLACs to other co-existing formats
-    Transcode(TranscodeCommand),
-
-    /// Update red_oxide to the latest version
-    SelfUpdate(SelfUpdateCommand),
-}
-
-#[derive(Parser, Debug, Clone)]
-pub struct SelfUpdateCommand {
-    /// If debug logs should be shown
-    #[arg(long, default_value = "false")]
-    pub debug: bool,
+    Transcode(TranscodeCommand)
 }
 
 #[derive(Parser, Debug, Clone)]
@@ -144,58 +134,3 @@ async fn main() -> anyhow::Result<()> {
     Ok(())
 }
 
-async fn cleanup_old_executable() -> anyhow::Result<()> {
-    let current_exe = std::env::current_exe()?;
-    let current_exe_parent = current_exe.parent().unwrap();
-
-    debug!("Checking if outdated executable exists");
-
-    let outdated_exe = current_exe_parent.join("red_oxide_old");
-
-    let exists = tokio::fs::try_exists(&outdated_exe).await?;
-
-    debug!("Outdated executable exists: {}", exists);
-
-    if exists {
-        tokio::fs::remove_file(&outdated_exe).await?;
-
-        debug!("Removed outdated executable: {:?}", outdated_exe);
-    }
-
-    Ok(())
-}
-
-async fn check_for_new_version_and_notify(
-    github_api: &mut GithubApi,
-    term: &Term,
-) -> anyhow::Result<()> {
-    let latest_release = github_api
-        .get_latest_release_version(GH_USER, GH_REPO)
-        .await?;
-
-    let current_version = release::get_current_release_version();
-
-    let compared_version_result =
-        release::compare_latest_release_to_current_version(&latest_release, &current_version);
-
-    match compared_version_result {
-        ReleaseVersionCompareResult::OutdatedMajor => {
-            term.write_line(&format!(
-                "{} Update available: New major version. Use the self-update command. Major updates may change things significantly. See the Github page for details.",
-                WARNING
-            ))?;
-        }
-        ReleaseVersionCompareResult::OutdatedMinor => {
-            term.write_line(&format!(
-				"{} Update available: New minor version. Use the self-update command. Minor updates add new features and improvements.",
-				WARNING
-			))?;
-        }
-        ReleaseVersionCompareResult::OutdatedPatch => {
-            term.write_line(&format!( "{} Update available: New patch version. Use the self-update command. Patch updates fix bugs and make small improvements.", WARNING))?;
-        }
-        ReleaseVersionCompareResult::EqualOrNewer => {}
-    }
-
-    Ok(())
-}
