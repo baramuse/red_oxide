@@ -138,8 +138,7 @@ async fn main() -> anyhow::Result<()> {
     let term = Term::stdout();
 
     match cli.command {
-        Commands::Transcode(cmd) => command::transcode::transcode(cmd, &term).await?,
-        Commands::SelfUpdate(_cmd) => self_update::self_update(&term, &mut github).await?,
+        Commands::Transcode(cmd) => command::transcode::transcode(cmd, &term).await?
     }
 
     Ok(())
